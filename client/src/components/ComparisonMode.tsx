@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ResultCard } from "./ResultCard";
 import { PRESET_LOCATIONS, computeHilal } from "@/lib/astronomy";
 import type { Location, VisibilityStandard } from "@/lib/astronomy";
-import { Globe, Plus, X } from "lucide-react";
+import { Globe, Plus } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 
 interface ComparisonModeProps {
   date: Date;
@@ -15,6 +16,7 @@ interface ComparisonModeProps {
 }
 
 export function ComparisonMode({ date, standard, currentLocation }: ComparisonModeProps) {
+  const { t } = useLanguage();
   const [selectedLocations, setSelectedLocations] = useState<Location[]>([
     PRESET_LOCATIONS[0], // Putrajaya
     PRESET_LOCATIONS[1], // Jakarta
@@ -44,16 +46,17 @@ export function ComparisonMode({ date, standard, currentLocation }: ComparisonMo
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold flex items-center gap-2">
           <Globe className="w-4 h-4" />
-          Comparison Mode
+          {t("compareTitle")}
         </h2>
         <Button
           variant="outline"
           size="sm"
+          className="h-9"
           onClick={() => setShowPicker(!showPicker)}
           data-testid="toggle-location-picker"
         >
           <Plus className="w-3 h-3 mr-1" />
-          {showPicker ? "Done" : "Add Cities"}
+          {showPicker ? t("tabResult") : t("tabCompare")}
         </Button>
       </div>
 
@@ -61,11 +64,11 @@ export function ComparisonMode({ date, standard, currentLocation }: ComparisonMo
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-muted-foreground mb-3">
-              Select up to 6 cities to compare (currently {selectedLocations.length}):
+              {t("compareSubtitle")} ({selectedLocations.length}/6):
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentLocation && (
-                <label className="flex items-center gap-2 text-sm cursor-pointer p-2 rounded-md hover:bg-muted/50 transition-colors">
+                <label className="flex items-center gap-2 text-sm cursor-pointer p-2 rounded-md hover:bg-muted/50 transition-colors min-h-[44px]">
                   <Checkbox
                     checked={selectedLocations.some((l) => l.name === currentLocation.name)}
                     onCheckedChange={() => toggleLocation(currentLocation)}
@@ -76,7 +79,7 @@ export function ComparisonMode({ date, standard, currentLocation }: ComparisonMo
               {PRESET_LOCATIONS.map((loc) => (
                 <label
                   key={loc.name}
-                  className="flex items-center gap-2 text-sm cursor-pointer p-2 rounded-md hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-2 text-sm cursor-pointer p-2 rounded-md hover:bg-muted/50 transition-colors min-h-[44px]"
                 >
                   <Checkbox
                     checked={selectedLocations.some((l) => l.name === loc.name)}
@@ -96,11 +99,11 @@ export function ComparisonMode({ date, standard, currentLocation }: ComparisonMo
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-2 px-2 font-medium text-muted-foreground">Location</th>
-                <th className="text-right py-2 px-2 font-medium text-muted-foreground">Sunset</th>
-                <th className="text-right py-2 px-2 font-medium text-muted-foreground">Moon Alt.</th>
-                <th className="text-right py-2 px-2 font-medium text-muted-foreground">Elong.</th>
-                <th className="text-center py-2 px-2 font-medium text-muted-foreground">Visible</th>
+                <th className="text-left py-2 px-2 font-medium text-muted-foreground">{t("location_col")}</th>
+                <th className="text-right py-2 px-2 font-medium text-muted-foreground">{t("sunsetCol")}</th>
+                <th className="text-right py-2 px-2 font-medium text-muted-foreground">{t("moonAltCol")}</th>
+                <th className="text-right py-2 px-2 font-medium text-muted-foreground">{t("elongationCol")}</th>
+                <th className="text-center py-2 px-2 font-medium text-muted-foreground">{t("visibilityCol")}</th>
               </tr>
             </thead>
             <tbody>
@@ -145,7 +148,7 @@ export function ComparisonMode({ date, standard, currentLocation }: ComparisonMo
                             : ""
                         }`}
                       >
-                        {vis.visible ? "Yes" : "No"}
+                        {vis.visible ? t("yes") : t("no")}
                       </Badge>
                     </td>
                   </tr>

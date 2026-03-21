@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { computeHilalRange } from "@/lib/astronomy";
 import type { Location, VisibilityStandard } from "@/lib/astronomy";
 import { Calendar } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 
 interface TimelineSliderProps {
   baseDate: Date;
@@ -22,6 +23,8 @@ export function TimelineSlider({
   dayOffset,
   onDayOffsetChange,
 }: TimelineSliderProps) {
+  const { t } = useLanguage();
+
   const startDate = useMemo(() => {
     const d = new Date(baseDate);
     d.setDate(d.getDate() - 7);
@@ -48,7 +51,7 @@ export function TimelineSlider({
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5" />
-            Timeline View
+            {t("moonAltTimeline")}
           </h3>
           <span className="text-xs text-muted-foreground">
             {formatShortDate(currentDate)}
@@ -63,7 +66,7 @@ export function TimelineSlider({
               x1="0" y1="30" x2={RANGE_DAYS * 20} y2="30"
               stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="2,2"
             />
-            
+
             {/* Altitude bars */}
             {rangeResults.map((r, i) => {
               const vis = standard.check(r);
@@ -71,7 +74,7 @@ export function TimelineSlider({
               const barHeight = (altClamped / 20) * 25;
               const x = i * 20 + 3;
               const isSelected = i === dayOffset + 7;
-              
+
               return (
                 <g key={i}>
                   <rect
@@ -115,10 +118,10 @@ export function TimelineSlider({
           data-testid="timeline-slider"
         />
 
-        <div className="flex justify-between text-[10px] text-muted-foreground">
-          <span>-7 days</span>
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>-7 {t("dayLabel")}</span>
           <span className="font-medium text-foreground">Today</span>
-          <span>+7 days</span>
+          <span>+7 {t("dayLabel")}</span>
         </div>
       </CardContent>
     </Card>
