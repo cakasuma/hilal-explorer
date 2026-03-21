@@ -17,11 +17,13 @@ export interface HilalResult {
   sunsetTime: Date;
   moonAltitude: number; // degrees at sunset
   sunAltitude: number; // degrees at sunset (should be ~0 or slightly negative)
-  elongation: number; // angle between sun and moon
+  elongation: number; // angle between sun and moon (ARCL)
+  arcOfVision: number; // moon altitude minus sun altitude (ARCV)
   moonAge: number; // hours since new moon
   moonAzimuth: number;
   sunAzimuth: number;
   illumination: number; // fraction 0-1
+  illuminationPct: number; // 0-100 percentage
 }
 
 export interface VisibilityStandard {
@@ -119,10 +121,12 @@ export function computeHilal(date: Date, location: Location): HilalResult {
     moonAltitude: pos.moonAlt,
     sunAltitude: pos.sunAlt,
     elongation: pos.elongation,
+    arcOfVision: pos.moonAlt - pos.sunAlt,
     moonAge: pos.moonAge,
     moonAzimuth: pos.moonAz,
     sunAzimuth: pos.sunAz,
     illumination: pos.illumination,
+    illuminationPct: Math.round(pos.illumination * 100),
   };
 }
 
@@ -167,6 +171,28 @@ export const VISIBILITY_STANDARDS: VisibilityStandard[] = [
       const reasons: string[] = [];
       if (!altOk) reasons.push(`altitude ${result.moonAltitude.toFixed(1)}° < 5°`);
       if (!elongOk) reasons.push(`elongation ${result.elongation.toFixed(1)}° < 8°`);
+      return { visible: false, reason: reasons.join("; ") };
+    },
+  },
+  {
+    id: "istanbul",
+    name: "Istanbul Criteria 2016",
+    description:
+      "OIC-agreed standard: moon age ≥ 9h after new moon, elongation ≥ 8°, and altitude ≥ 5°",
+    check: (result) => {
+      const ageOk = result.moonAge >= 9;
+      const elongOk = result.elongation >= 8;
+      const altOk = result.moonAltitude >= 5;
+      if (ageOk && elongOk && altOk) {
+        return {
+          visible: true,
+          reason: `Age ${result.moonAge.toFixed(1)}h ≥ 9h, elongation ${result.elongation.toFixed(1)}° ≥ 8°, altitude ${result.moonAltitude.toFixed(1)}° ≥ 5°`,
+        };
+      }
+      const reasons: string[] = [];
+      if (!ageOk) reasons.push(`moon age ${result.moonAge.toFixed(1)}h < 9h`);
+      if (!elongOk) reasons.push(`elongation ${result.elongation.toFixed(1)}° < 8°`);
+      if (!altOk) reasons.push(`altitude ${result.moonAltitude.toFixed(1)}° < 5°`);
       return { visible: false, reason: reasons.join("; ") };
     },
   },

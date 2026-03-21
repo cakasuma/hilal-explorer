@@ -140,6 +140,13 @@ export function EducationalSection() {
               typical of traditional rukyah requirements.
             </p>
 
+            <p className="font-medium text-foreground mt-3">Istanbul Criteria 2016:</p>
+            <p>
+              Adopted at the OIC (Organisation of Islamic Cooperation) Hijri Calendar Unification
+              conference in Istanbul. Requires: moon age ≥ 9 hours after new moon, elongation ≥ 8°,
+              and moon altitude ≥ 5° at sunset. Designed as a global unification standard.
+            </p>
+
             <p className="font-medium text-foreground mt-3">Global (Moon Above Horizon):</p>
             <p>
               The simplest check — is the moon above the horizon at sunset? While the moon being
