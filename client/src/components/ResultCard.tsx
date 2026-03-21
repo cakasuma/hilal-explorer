@@ -93,7 +93,7 @@ export function ResultCard({ result, standard, compact }: ResultCardProps) {
         </div>
 
         {/* Data Grid */}
-        <div className={`grid gap-2 ${compact ? "grid-cols-2" : "grid-cols-2"}`}>
+        <div className={`grid gap-2 ${compact ? "grid-cols-2" : "grid-cols-3"}`}>
           <DataRow
             icon={<Sun className="w-3.5 h-3.5 text-amber-500" />}
             label="Sunset"
@@ -115,6 +115,19 @@ export function ResultCard({ result, standard, compact }: ResultCardProps) {
             label="Moon Age"
             value={`${result.moonAge.toFixed(1)}h`}
           />
+          <DataRow
+            icon={<Moon className="w-3.5 h-3.5 text-yellow-300" />}
+            label="Illumination"
+            value={`${result.illuminationPct}%`}
+          />
+          {!compact && (
+            <DataRow
+              icon={<Compass className="w-3.5 h-3.5 text-teal-400" />}
+              label="Arc of Vision"
+              value={`${result.arcOfVision.toFixed(2)}°`}
+              highlight={result.arcOfVision > 0 ? "positive" : "negative"}
+            />
+          )}
         </div>
 
         {/* Visibility reason */}
