@@ -8,10 +8,11 @@ interface SkyDiagramProps {
 /**
  * SVG sky diagram showing sun/moon positions relative to the horizon.
  * Altitude maps to Y position, azimuth difference maps to X offset.
+ * Uses a fixed 400x240 viewBox — CSS `w-full h-auto` handles responsive scaling.
  */
 export function SkyDiagram({ result, compact }: SkyDiagramProps) {
-  const width = compact ? 280 : 400;
-  const height = compact ? 180 : 240;
+  const width = 400;
+  const height = 240;
   const horizonY = height * 0.7;
   const centerX = width / 2;
 
@@ -34,8 +35,13 @@ export function SkyDiagram({ result, compact }: SkyDiagramProps) {
   const moonY = altToY(result.moonAltitude);
 
   const isVisible = result.moonAltitude > 0;
+  // compact flag scales down element sizes within the fixed 400x240 viewBox
+  const sunR = compact ? 11 : 14;
+  const moonR = compact ? 9 : 11;
   const fontSize = compact ? 9 : 11;
   const labelFontSize = compact ? 8 : 10;
+  // Use unique gradient IDs to avoid conflicts when multiple diagrams render simultaneously
+  const gradId = compact ? 'c' : 'f';
 
   return (
     <svg
@@ -46,20 +52,20 @@ export function SkyDiagram({ result, compact }: SkyDiagramProps) {
     >
       {/* Sky gradient */}
       <defs>
-        <linearGradient id={`sky-${compact ? 'c' : 'f'}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`sky-${gradId}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="hsl(222, 30%, 18%)" />
           <stop offset="60%" stopColor="hsl(22, 60%, 35%)" />
           <stop offset="100%" stopColor="hsl(32, 70%, 50%)" />
         </linearGradient>
-        <radialGradient id={`moonGlow-${compact ? 'c' : 'f'}`}>
+        <radialGradient id={`moonGlow-${gradId}`}>
           <stop offset="0%" stopColor="rgba(255,255,255,0.3)" />
           <stop offset="100%" stopColor="rgba(255,255,255,0)" />
         </radialGradient>
       </defs>
 
       {/* Sky background */}
-      <rect width={width} height={horizonY} fill={`url(#sky-${compact ? 'c' : 'f'})`} rx="4" />
-      
+      <rect width={width} height={horizonY} fill={`url(#sky-${gradId})`} rx="4" />
+
       {/* Ground */}
       <rect y={horizonY} width={width} height={height - horizonY} fill="hsl(30, 15%, 20%)" rx="0" />
 
@@ -108,12 +114,12 @@ export function SkyDiagram({ result, compact }: SkyDiagramProps) {
 
       {/* Sun */}
       <g>
-        <circle cx={sunX} cy={sunY} r={compact ? 10 : 14} fill="hsl(42, 90%, 55%)" />
-        <circle cx={sunX} cy={sunY} r={compact ? 16 : 22} fill="rgba(255,200,50,0.15)" />
+        <circle cx={sunX} cy={sunY} r={sunR} fill="hsl(42, 90%, 55%)" />
+        <circle cx={sunX} cy={sunY} r={sunR + 8} fill="rgba(255,200,50,0.15)" />
         {/* Sun rays */}
         {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
-          const r1 = compact ? 12 : 16;
-          const r2 = compact ? 17 : 23;
+          const r1 = sunR + 2;
+          const r2 = sunR + 9;
           const rad = (angle * Math.PI) / 180;
           return (
             <line
@@ -129,7 +135,7 @@ export function SkyDiagram({ result, compact }: SkyDiagramProps) {
           );
         })}
         <text
-          x={sunX} y={sunY + (compact ? 22 : 30)}
+          x={sunX} y={sunY + sunR + 16}
           fill="hsl(42, 80%, 65%)" fontSize={fontSize}
           fontFamily="sans-serif" textAnchor="middle" fontWeight="600"
         >
@@ -140,17 +146,17 @@ export function SkyDiagram({ result, compact }: SkyDiagramProps) {
       {/* Moon */}
       <g>
         {/* Moon glow */}
-        <circle cx={moonX} cy={moonY} r={compact ? 18 : 24} fill={`url(#moonGlow-${compact ? 'c' : 'f'})`} />
+        <circle cx={moonX} cy={moonY} r={moonR + 13} fill={`url(#moonGlow-${gradId})`} />
         {/* Moon body - crescent shape */}
-        <circle cx={moonX} cy={moonY} r={compact ? 8 : 11} fill="hsl(45, 10%, 88%)" />
+        <circle cx={moonX} cy={moonY} r={moonR} fill="hsl(45, 10%, 88%)" />
         <circle
           cx={moonX + (compact ? 3 : 4)} cy={moonY}
-          r={compact ? 7 : 9}
+          r={moonR - 2}
           fill="hsl(222, 30%, 18%)"
           opacity={1 - result.illumination * 2}
         />
         <text
-          x={moonX} y={moonY + (compact ? 18 : 24)}
+          x={moonX} y={moonY + moonR + 13}
           fill={isVisible ? "hsl(162, 60%, 65%)" : "hsl(0, 60%, 65%)"}
           fontSize={fontSize} fontFamily="sans-serif" textAnchor="middle" fontWeight="600"
         >

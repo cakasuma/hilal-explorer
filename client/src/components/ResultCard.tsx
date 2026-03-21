@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SkyDiagram } from "./SkyDiagram";
 import type { HilalResult, VisibilityStandard } from "@/lib/astronomy";
 import { estimateHijriDate } from "@/lib/astronomy";
-import { CheckCircle, XCircle, Moon, Sun, Compass } from "lucide-react";
+import { CheckCircle, XCircle, Moon, Sun, Compass, HelpCircle } from "lucide-react";
+import { useLanguage, HIJRI_MONTH_NAMES_ID } from "@/lib/i18n";
 
 interface ResultCardProps {
   result: HilalResult;
@@ -12,8 +14,12 @@ interface ResultCardProps {
 }
 
 export function ResultCard({ result, standard, compact }: ResultCardProps) {
+  const { lang, t } = useLanguage();
   const visibility = standard.check(result);
   const hijri = estimateHijriDate(result.date);
+  const hijriMonthName = lang === "id"
+    ? HIJRI_MONTH_NAMES_ID[(hijri.month - 1) % 12]
+    : hijri.monthName;
 
   const formatTime = (d: Date) => {
     try {
@@ -75,15 +81,27 @@ export function ResultCard({ result, standard, compact }: ResultCardProps) {
             data-testid={`visibility-badge-${result.location.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
             {visibility.visible ? (
-              <><CheckCircle className="w-3 h-3 mr-1" /> Possible</>
+              <><CheckCircle className="w-3 h-3 mr-1" /> {t("possible")}</>
             ) : (
-              <><XCircle className="w-3 h-3 mr-1" /> Not Possible</>
+              <><XCircle className="w-3 h-3 mr-1" /> {t("notPossible")}</>
             )}
           </Badge>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {formatDate(result.date)} &middot; {hijri.day} {hijri.monthName} {hijri.year} AH (est.)
-        </p>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <p className="text-xs text-muted-foreground">
+            {formatDate(result.date)} &middot; {hijri.day} {hijriMonthName} {hijri.year} AH (est.)
+          </p>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="inline-flex items-center opacity-50 hover:opacity-100 transition-opacity focus:outline-none" aria-label="About Hijri date estimate">
+                <HelpCircle className="w-3 h-3 text-muted-foreground" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-xs text-xs">
+              {t("hijriTooltip")}
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </CardHeader>
 
       <CardContent className={compact ? "px-4 pb-4" : ""}>
@@ -93,37 +111,37 @@ export function ResultCard({ result, standard, compact }: ResultCardProps) {
         </div>
 
         {/* Data Grid */}
-        <div className={`grid gap-2 ${compact ? "grid-cols-2" : "grid-cols-3"}`}>
+        <div className={`grid gap-2 ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
           <DataRow
             icon={<Sun className="w-3.5 h-3.5 text-amber-500" />}
-            label="Sunset"
+            label={t("sunset")}
             value={formatTime(result.sunsetTime)}
           />
           <DataRow
             icon={<Moon className="w-3.5 h-3.5 text-blue-300" />}
-            label="Moon Alt."
+            label={t("moonAlt")}
             value={`${result.moonAltitude.toFixed(2)}°`}
             highlight={result.moonAltitude > 0 ? "positive" : "negative"}
           />
           <DataRow
             icon={<Compass className="w-3.5 h-3.5 text-purple-400" />}
-            label="Elongation"
+            label={t("elongation")}
             value={`${result.elongation.toFixed(2)}°`}
           />
           <DataRow
             icon={<Moon className="w-3.5 h-3.5 text-gray-400" />}
-            label="Moon Age"
+            label={t("moonAge")}
             value={`${result.moonAge.toFixed(1)}h`}
           />
           <DataRow
             icon={<Moon className="w-3.5 h-3.5 text-yellow-300" />}
-            label="Illumination"
+            label={t("illumination")}
             value={`${result.illuminationPct}%`}
           />
           {!compact && (
             <DataRow
               icon={<Compass className="w-3.5 h-3.5 text-teal-400" />}
-              label="Arc of Vision"
+              label={t("arcOfVision")}
               value={`${result.arcOfVision.toFixed(2)}°`}
               highlight={result.arcOfVision > 0 ? "positive" : "negative"}
             />
@@ -158,7 +176,7 @@ function DataRow({
     <div className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-muted/50">
       {icon}
       <div className="min-w-0">
-        <p className="text-[10px] text-muted-foreground leading-none mb-0.5">{label}</p>
+        <p className="text-xs text-muted-foreground leading-none mb-0.5">{label}</p>
         <p
           className={`text-xs font-semibold leading-none ${
             highlight === "positive"
